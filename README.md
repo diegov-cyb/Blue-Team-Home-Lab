@@ -35,6 +35,22 @@ graph TD
     C <--> D
 ```
 
+## Validation & Implementation
+
+### Network Design (Initial Plan)
+![Architecture](./images/sketch.jpeg)
+
+### Proxmox VLAN Configuration
+![Proxmox](./images/Bridge.jpeg)
+
+### Firewall Rules (pfSense)
+![Firewall](./images/firewall.jpeg)
+
+### Connectivity & Routing Validation
+![Connectivity](./images/connectivity-validation.jpeg)
+
+These screenshots demonstrate the progression from initial design to implementation, configuration, and validation of the segmented network environment.
+
 ## Firewall Policy Summary
 
 | Source VLAN | Destination | Allowed | Purpose |
@@ -95,4 +111,3 @@ Key outcomes:
 - Established a scalable foundation for security monitoring and detection labs
 
 The most valuable learning came from diagnosing and resolving misconfigurations, reinforcing a structured and methodical troubleshooting approach.
-

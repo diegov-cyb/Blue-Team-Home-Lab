@@ -235,7 +235,7 @@ The Proxmox VE hypervisor serves as the foundation of the homelab, hosting all v
 The Proxmox VLAN-aware Linux bridge (vmbr1) provides virtual switching for all guest machines while supporting IEEE 802.1Q VLAN tagging. This bridge enables pfSense to receive tagged traffic and route communication between management, client, and server networks.
 
 <p align="center">
-<img src="images/proxmox/bridge.jpeg" width="650">
+<img src="images/proxmox/Bridge.jpeg" width="650">
 </p>
 
 ### Outcome

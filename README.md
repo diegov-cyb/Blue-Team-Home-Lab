@@ -1,8 +1,8 @@
 # Blue-Team-Home-Lab
 
-Enterprise-style cybersecurity home lab built using **Proxmox VE**, **pfSense**, **Windows Server 2022**, **Active Directory**, **Wazuh SIEM**, and **Linux** to simulate a small business environment.
+Enterprise-style cybersecurity home lab built using **Proxmox VE**, **pfSense**, **Windows Server 2022**, **Active Directory**, **Wazuh SIEM**, **Windows 11**, and **Linux** to simulate a segmented small-business environment.
 
-The goal of this project is to demonstrate enterprise infrastructure deployment, virtualization, Windows domain administration, network segmentation, centralized security monitoring, and blue team operations.
+The goal of this project is to demonstrate enterprise infrastructure deployment, virtualization, Windows domain administration, network segmentation, centralized security monitoring, endpoint security, Group Policy administration, and blue-team operations.
 
 ---
 
@@ -10,12 +10,19 @@ The goal of this project is to demonstrate enterprise infrastructure deployment,
 
 - Overview
 - Skills Demonstrated
-- Lab Environment
+- Current Lab Environment
 - Architecture
 - Completed Features
-- Validation & Implementation
-- Active Directory Deployment
-- Wazuh SIEM
+- Implementation Journey
+- Phase 1 – Network Planning
+- Phase 2 – Proxmox VE Deployment
+- Phase 3 – pfSense Firewall & Network Segmentation
+- Phase 4 – Wazuh SIEM Deployment
+- Phase 5 – Windows Server 2022 Deployment
+- Phase 6 – Active Directory Domain Services
+- Phase 7 – Windows 11 Enterprise Client
+- Phase 8 – Group Policy & Security Auditing
+- Firewall Policy Summary
 - Project Timeline
 - Future Expansion
 - Key Takeaways
@@ -24,7 +31,7 @@ The goal of this project is to demonstrate enterprise infrastructure deployment,
 
 # Overview
 
-This project demonstrates the design, deployment, and administration of a secure enterprise-style lab using virtualization and modern security technologies.
+This project demonstrates the design, deployment, administration, and security monitoring of an enterprise-style cybersecurity lab using virtualization and modern infrastructure technologies.
 
 The environment currently includes:
 
@@ -33,10 +40,16 @@ The environment currently includes:
 - VLAN segmentation
 - Windows Server 2022
 - Active Directory Domain Services
-- DNS Server
+- Active Directory-integrated DNS
+- Windows 11 domain workstation
+- Organizational Units
+- Active Directory users and security groups
+- Group Policy
+- Windows Defender Firewall management
+- Advanced Windows security auditing
 - Wazuh SIEM
 - Linux administration
-- Windows endpoint monitoring
+- Windows and Linux endpoint monitoring
 - Enterprise network architecture
 
 ---
@@ -50,23 +63,34 @@ The environment currently includes:
 - VirtIO Drivers
 - QEMU Guest Agent
 - Snapshot Management
+- Virtual Network Configuration
 
 ### Networking
 
 - pfSense Firewall
 - VLAN Configuration
+- IEEE 802.1Q VLAN Tagging
 - Inter-VLAN Routing
 - Static IP Configuration
+- DHCP
 - Network Segmentation
 - DNS Configuration
+- Network Troubleshooting
+- Firewall Rule Administration
 
 ### Windows Administration
 
 - Windows Server 2022
+- Windows 11 Pro
 - Active Directory Domain Services
 - Domain Controller Deployment
 - DNS Server
-- Windows Administration
+- Domain Join Administration
+- Organizational Units
+- Active Directory Users
+- Security Groups
+- Group Policy Objects
+- Windows Security Event Logs
 
 ### Linux Administration
 
@@ -74,6 +98,8 @@ The environment currently includes:
 - Linux Mint
 - SSH
 - Package Management
+- Linux Networking
+- Service Management
 
 ### Security
 
@@ -81,7 +107,13 @@ The environment currently includes:
 - Endpoint Monitoring
 - Windows Agent Deployment
 - Linux Agent Deployment
+- Windows Defender Firewall
+- Group Policy Security Baselines
+- Advanced Audit Policy
+- Authentication Event Monitoring
+- Windows Event ID Analysis
 - Firewall Rule Creation
+- Security Validation and Troubleshooting
 
 ---
 
@@ -92,62 +124,106 @@ The environment currently includes:
 - Proxmox VE Hypervisor
 - pfSense Community Edition
 - Netgear Managed Switch
-- VLAN-aware Linux Bridge (vmbr1)
+- VLAN-aware Linux Bridge (`vmbr1`)
+
+## Network Segmentation
+
+| VLAN | Purpose | Network | Gateway |
+|---|---|---|---|
+| VLAN 99 | Management | `192.168.99.0/24` | `192.168.99.1` |
+| VLAN 10 | Clients | `192.168.10.0/24` | `192.168.10.1` |
+| VLAN 20 | Servers | `192.168.20.0/24` | `192.168.20.1` |
 
 ## Management
 
-- Linux Mint Management Workstation
+### Linux Mint Management Workstation
+
+- Hostname: `linuxmint-mgmt01`
+- IP Address: `192.168.99.100`
+- VLAN: 99
+- QEMU Guest Agent
+- Wazuh Agent
 - Firefox Management Station
 - SSH Administration
 
 ## Security
 
+### Wazuh Manager
+
+- Hostname: `wazuh-mgr-01`
+- IP Address: `192.168.20.10`
+- VLAN: 20
 - Wazuh Manager
 - Wazuh Dashboard
-- Windows Agent
-- Linux Agent
+- Wazuh Indexer
+- Endpoint Monitoring
 
-## Windows
+## Windows Server
 
-- Windows Server 2022
+### DC01
+
+- Operating System: Windows Server 2022
+- Hostname: `DC01`
+- IP Address: `192.168.20.20`
+- VLAN: 20
 - Active Directory Domain Services
 - DNS Server
-- Domain Controller (DC01)
+- Domain Controller
+- Domain: `homelab.local`
+- Wazuh Agent
 
-## Networking
+## Windows Client
 
-- VLAN 99 – Management
-- VLAN 10 – Clients
-- VLAN 20 – Servers
+### WIN11-01
+
+- Operating System: Windows 11 Pro
+- Hostname: `WIN11-01`
+- VLAN: 10
+- Client Address: `192.168.10.101` during validation
+- Gateway: `192.168.10.1`
+- DNS Server: `192.168.20.20`
+- Domain: `homelab.local`
+- Workstations OU
+- Workstation Security Baseline GPO
 
 ---
 
 # Architecture
 
-```text
-                    Internet
-                        │
-                  Home Router
-                        │
-                 Proxmox VE Host
-                        │
-              VLAN Aware Bridge (vmbr1)
-                        │
-                  pfSense Firewall
-          ┌─────────────┼─────────────┐
-          │             │             │
-     VLAN 99       VLAN 10      VLAN 20
-    Management      Clients      Servers
-          │                          │
-     Linux Mint              Windows Server
-                             DC01 (AD/DNS)
-                                  │
-                           Active Directory
-                                  │
-                             DNS Services
-                                  │
-                            Wazuh Manager
+```mermaid
+graph TD
+
+    INTERNET[Internet]
+    ROUTER[Home Router]
+    PVE[Proxmox VE Host]
+    BRIDGE[VLAN-Aware Bridge vmbr1]
+    PF[pfSense Firewall / Router]
+
+    INTERNET --> ROUTER
+    ROUTER --> PVE
+    PVE --> BRIDGE
+    BRIDGE --> PF
+
+    PF --> MGMT[VLAN 99 - Management<br/>192.168.99.0/24]
+    PF --> CLIENT[VLAN 10 - Clients<br/>192.168.10.0/24]
+    PF --> SERVER[VLAN 20 - Servers<br/>192.168.20.0/24]
+
+    MGMT --> MINT[Linux Mint<br/>linuxmint-mgmt01<br/>192.168.99.100]
+
+    CLIENT --> WIN11[WIN11-01<br/>Windows 11 Pro<br/>Domain Workstation]
+
+    SERVER --> DC01[DC01<br/>Windows Server 2022<br/>AD DS + DNS<br/>192.168.20.20]
+    SERVER --> WAZUH[Wazuh Manager<br/>192.168.20.10]
+
+    WIN11 -->|DNS / Kerberos / Active Directory| DC01
+    MINT -->|Wazuh Agent| WAZUH
+    DC01 -->|Wazuh Agent| WAZUH
+    WIN11 -.->|Planned Wazuh Agent / Security Telemetry| WAZUH
 ```
+
+The environment separates administrative systems, client endpoints, and server infrastructure while allowing required communication through pfSense firewall policies.
+
+WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain controller for Active Directory DNS. Security telemetry is centralized through the Wazuh Manager.
 
 ---
 
@@ -158,17 +234,30 @@ The environment currently includes:
 - VLAN-aware networking
 - pfSense firewall deployment
 - Inter-VLAN routing
+- VLAN 99 Management network
+- VLAN 10 Client network
+- VLAN 20 Server network
 - Linux Mint management workstation
 - Ubuntu Server deployment
 - Wazuh SIEM deployment
 - Windows Server 2022 deployment
-- Active Directory installation
-- DNS Server installation
+- Active Directory Domain Services
+- Active Directory-integrated DNS
 - Static IP addressing
+- DHCP configuration
 - VirtIO driver installation
 - QEMU Guest Agent deployment
-- Wazuh Windows Agent deployment
+- Wazuh Windows Server Agent deployment
 - Wazuh Linux Agent deployment
+- Windows 11 Pro deployment
+- Active Directory domain join
+- Organizational Unit creation
+- Active Directory user administration
+- Active Directory security groups
+- Group Policy deployment
+- Windows Defender Firewall policy
+- Advanced Windows auditing
+- Windows authentication event validation
 
 ---
 
@@ -214,6 +303,7 @@ Deploy Proxmox VE as the enterprise virtualization platform responsible for host
   - Linux Mint
   - Wazuh Manager
   - Windows Server 2022 (DC01)
+  - Windows 11
 
 ### Validation
 
@@ -243,6 +333,7 @@ The Proxmox VLAN-aware Linux bridge (vmbr1) provides virtual switching for all g
 - Enterprise virtualization platform operational
 - Multiple virtual machines deployed
 - Centralized VM management established
+- VLAN-aware virtual networking implemented
 - Foundation prepared for network segmentation and security services
 
 ---
@@ -263,8 +354,10 @@ Deploy pfSense as the central firewall and router to provide network segmentatio
 - Configured VLAN interfaces
 - Implemented inter-VLAN routing
 - Created firewall rules for each VLAN
+- Configured DHCP
 - Configured static IP addressing
 - Enabled HTTPS management
+- Restricted management access
 - Disabled unnecessary services
 
 ### Validation
@@ -291,6 +384,14 @@ Network connectivity was validated by testing communication between VLANs and ve
 <p align="center">
 <img src="images/pfsense/connectivity-validation.jpeg" width="700">
 </p>
+
+### Troubleshooting Insight
+
+During testing, ICMP communication sometimes ailed while HTTPS access to the pfSense WebGUI remained functional.
+
+This demonstrated that the issue was caused by protocol-specific firewall policy rather than general network connectivity. 
+
+The behavior reinforced the importance of validating individual protocols and ports rather than relying exclusively on ICMP when troubleshooting networks.
 
 ### Outcome
 
@@ -378,13 +479,16 @@ Deploy Windows Server 2022 as the enterprise server platform that will host Acti
 
 ### Configuration
 
-- Installed Windows Server 2022
+
+- Deployed Windows 11 virtual machine in Proxmox VE
+- Configured VirtIO networking
 - Installed VirtIO drivers
 - Installed QEMU Guest Agent
-- Configured static IP address
+- Configured static IP addressing
 - Renamed server to **DC01**
-- Enabled Remote Desktop
 - Installed Windows updates
+- Prepared server for Active Directory deployment
+- Configured Server VLAN connectivity
 
 ### Validation
 
@@ -439,16 +543,20 @@ Deploy Active Directory Domain Services (AD DS) to provide centralized authentic
 
 - Installed Active Directory Domain Services
 - Installed DNS Server
-- Created new forest (**homelab.local**)
+- Created new forest **homelab.local**
 - Promoted DC01 to Domain Controller
-- Configured DNS integration
+- Configured Active Directory-integrated DNS
 - Configured SYSVOL and NETLOGON
+- Verified DNS service availability
+- Configured DC01 with `192.168.20.20`
 
 ### Validation
 
 - Verified Domain Controller promotion
 - Confirmed Active Directory Users and Computers
 - Verified DNS Manager functionality
+- Verified `homelab.local` DNS zone
+- Verified `dc01.homelab.local` resolution
 - Confirmed domain services operational
 
 ### Figure 13 – Active Directory Users and Computers
@@ -467,19 +575,522 @@ Deploy Active Directory Domain Services (AD DS) to provide centralized authentic
 
 - Domain Controller successfully deployed
 - Centralized authentication established
-- DNS services operational
-- Enterprise identity infrastructure completed
+- Active Directory-integrated DNS operational
+- Enterprise identity infrastructure established
+- Infrastructure prepared for domain workstations
+
+---
+
+## Phase 7 – Windows 11 Enterprise Client
+
+### Objective
+
+Deploy a Windows 11 workstation on the Client network and integrate the endpoint with Active Directory to simulate a centrally managed enterprise workstation.
+
+### Configuration
+
+- Deployed Windows 11 Pro in Proxmox VE
+- Installed VirtIO storage and network drivers
+- Configured VirtIO network adapter
+- Connected workstation to `vmbr1`
+- Configured workstation for VLAN 10 Client network
+- Verified DHCP communication
+- Received client address `192.168.10.101`
+- Configured gateway `192.168.10.1`
+- Configured DNS server `192.168.20.20`
+- Renamed workstation to **WIN11-01**
+- Joined workstation to **homelab.local**
+- Verified domain authentication
+
+### Network Validation
+
+WIN11-01 successfully received:
+
+```text
+IPv4 Address:     192.168.10.101
+Subnet Mask:      255.255.255.0
+Default Gateway:  192.168.10.1
+DNS Server:       192.168.20.20
+```
+
+The client successfully reached both pfSense routing interfaces and DC01.
+
+Active Directory DNS resolution was verified:
+
+```text
+nslookup dc01.homelab.local 192.168.20.20
+```
+
+Result:
+
+```text
+Name:    dc01.homelab.local
+Address: 192.168.20.20
+```
+
+> Note: The addresses documented in this project are RFC1918 private lab addresses and are not publicly routable.
+
+### Figure 15 – Windows 11 Domain Join
+
+WIN11-01 successfully joined the `homelab.local` Active Directory domain.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use the screenshot showing:
+
+Welcome to the homelab.local domain.
+
+Suggested filename:
+images/windows11/domain-join.png
+-->
+
+<p align="center">
+<img src="images/windows11/domain-join.png" width="850">
+</p>
+
+### Figure 16 – Domain Authentication Validation
+
+Domain authentication was verified after rebooting WIN11-01.
+
+Validation commands included:
+
+```text
+hostname
+whoami
+echo %USERDOMAIN%
+echo %LOGONSERVER%
+```
+
+Expected results included:
+
+```text
+WIN11-01
+homelab\administrator
+HOMELAB
+\\DC01
+```
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use the screenshot showing:
+hostname
+whoami
+USERDOMAIN
+LOGONSERVER
+
+Suggested filename:
+images/windows11/domain-validation.png
+-->
+
+<p align="center">
+<img src="images/windows11/domain-validation.png" width="850">
+</p>
+
+### Active Directory Organization
+
+A dedicated Organizational Unit was created:
+
+```text
+Workstations
+```
+
+WIN11-01 was moved from the default Active Directory Computers container into the Workstations OU.
+
+A standard domain user account was also created for workstation authentication.
+
+An administrative security group was created:
+
+```text
+IT-Admins
+```
+
+### Figure 17 – Workstations Organizational Unit
+
+WIN11-01 was organized into the Workstations OU to allow workstation-specific Group Policy management.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use Active Directory Users and Computers showing:
+Workstations
+└── WIN11-01
+
+Suggested filename:
+images/active-directory/workstations-ou.png
+-->
+
+<p align="center">
+<img src="images/active-directory/workstations-ou.png" width="850">
+</p>
+
+### Figure 18 – IT-Admins Security Group
+
+The IT-Admins security group was created to support centralized administrative access management.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use your screenshot showing:
+IT-Admins Properties
+Members
+Domain user listed
+
+Suggested filename:
+images/active-directory/it-admins.png
+-->
+
+<p align="center">
+<img src="images/active-directory/it-admins.png" width="850">
+</p>
+
+### Outcome
+
+- Windows 11 enterprise workstation successfully deployed
+- Client VLAN DHCP connectivity verified
+- Active Directory DNS configured
+- WIN11-01 successfully joined to `homelab.local`
+- Domain authentication validated
+- Workstations OU created
+- WIN11-01 centrally organized through Active Directory
+- Domain user management implemented
+- IT-Admins security group implemented
+- Workstation prepared for centralized Group Policy enforcement
+
+---
+
+## Phase 8 – Group Policy & Windows Security Auditing
+
+### Objective
+
+Implement centralized workstation security policies using Active Directory Group Policy and configure Windows security auditing to generate endpoint telemetry for centralized security monitoring.
+
+### Workstation Security Baseline
+
+Created a Group Policy Object named:
+
+```text
+Workstation-Security-Baseline
+```
+
+The policy was linked to:
+
+```text
+homelab.local/Workstations
+```
+
+This allows security controls to be automatically applied to workstations placed within the Organizational Unit.
+
+### Security Controls
+
+The workstation security baseline includes:
+
+- Windows Defender Firewall enforcement
+- Domain firewall profile enabled
+- Private firewall profile enabled
+- Public firewall profile enabled
+- Unmatched inbound connections blocked
+- Outbound connections allowed by default
+- Password policy configuration
+- Account lockout policy
+- Advanced Windows auditing
+- Successful authentication auditing
+- Failed authentication auditing
+- Account management auditing
+- Process creation auditing
+- Policy change auditing
+
+### Figure 19 – Workstation Security Baseline GPO
+
+The Workstation-Security-Baseline was linked directly to the Workstations OU.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use Group Policy Management showing:
+Workstation-Security-Baseline
+Links:
+Workstations
+Link Enabled: Yes
+
+Suggested filename:
+images/group-policy/workstation-security-baseline.png
+-->
+
+<p align="center">
+<img src="images/group-policy/workstation-security-baseline.png" width="900">
+</p>
+
+### Figure 20 – Windows Defender Firewall Group Policy
+
+Windows Defender Firewall was centrally configured through Group Policy.
+
+The Domain, Private, and Public profiles were configured with:
+
+```text
+Firewall State: On
+Inbound Connections: Block
+Outbound Connections: Allow
+```
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use the screenshot showing all three profiles:
+Domain
+Private
+Public
+
+Suggested filename:
+images/group-policy/windows-firewall-policy.png
+-->
+
+<p align="center">
+<img src="images/group-policy/windows-firewall-policy.png" width="900">
+</p>
+
+### Group Policy Validation
+
+Policy was manually refreshed on WIN11-01:
+
+```powershell
+gpupdate /force
+```
+
+Computer policy application was verified with:
+
+```powershell
+gpresult /r /scope computer
+```
+
+WIN11-01 reported:
+
+```text
+CN=WIN11-01,OU=Workstations,DC=homelab,DC=local
+```
+
+Applied policies included:
+
+```text
+Workstation-Security-Baseline
+Default Domain Policy
+```
+
+### Figure 21 – Group Policy Application Validation
+
+The `gpresult` output confirmed that WIN11-01 successfully received the centrally managed workstation security baseline from DC01.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use your screenshot showing:
+
+COMPUTER SETTINGS
+CN=WIN11-01,OU=Workstations...
+Applied Group Policy Objects
+Workstation-Security-Baseline
+Default Domain Policy
+
+Suggested filename:
+images/group-policy/gpresult-validation.png
+-->
+
+<p align="center">
+<img src="images/group-policy/gpresult-validation.png" width="900">
+</p>
+
+### Advanced Audit Policy Validation
+
+Effective Windows auditing was validated directly from WIN11-01 using:
+
+```powershell
+auditpol /get /category:*
+```
+
+The configured policy enables collection of security-relevant authentication, account management, process, and policy events.
+
+### Figure 22 – Advanced Audit Policy Validation
+
+The effective Windows audit configuration was validated directly from the endpoint rather than relying solely on the Group Policy configuration interface.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use the auditpol screenshot showing the configured
+Success / Failure auditing.
+
+Suggested filename:
+images/group-policy/audit-policy-validation.png
+-->
+
+<p align="center">
+<img src="images/group-policy/audit-policy-validation.png" width="900">
+</p>
+
+### Windows Security Event Validation
+
+A controlled failed authentication attempt was generated to confirm that the workstation was producing security telemetry.
+
+Windows Event Viewer recorded:
+
+```text
+Event ID: 4625
+Source: Microsoft Windows Security Auditing
+Task Category: Logon
+Keywords: Audit Failure
+Computer: WIN11-01.homelab.local
+```
+
+### Figure 23 – Failed Logon Security Event
+
+Windows Security Event ID 4625 confirmed that failed authentication attempts were successfully being recorded after deployment of the workstation audit policy.
+
+<!-- SCREENSHOT PLACEHOLDER
+
+Use your Event Viewer screenshot showing:
+Event ID 4625
+Audit Failure
+WIN11-01.homelab.local
+
+Suggested filename:
+images/group-policy/event-4625.png
+-->
+
+<p align="center">
+<img src="images/group-policy/event-4625.png" width="900">
+</p>
+
+### Security Telemetry Flow
+
+```mermaid
+graph LR
+
+    AD[Active Directory / GPO]
+    WIN[WIN11-01]
+    LOG[Windows Security Log]
+    AGENT[Wazuh Agent]
+    SIEM[Wazuh Manager]
+
+    AD --> WIN
+    WIN --> LOG
+    LOG -.-> AGENT
+    AGENT -.-> SIEM
+```
+
+The Windows endpoint is now configured to generate the security telemetry required for centralized Wazuh monitoring.
+
+### Outcome
+
+- Centralized workstation security baseline implemented
+- GPO linked to Workstations OU
+- Windows Defender Firewall centrally managed
+- Password and account lockout policy settings configured
+- Advanced Windows security auditing enabled
+- Group Policy application validated
+- Effective audit configuration verified
+- Failed authentication event successfully generated
+- Event ID 4625 analyzed in Windows Event Viewer
+- WIN11-01 prepared for Wazuh SIEM integration
 
 ---
 
 # Firewall Policy Summary
 
 | Source | Destination | Action | Purpose |
-|---------|-------------|--------|---------|
-| Users | Servers | Allow | Business communication |
+|---|---|---|---|
+| Management | pfSense | Allow HTTPS | Firewall administration |
+| Management | Proxmox | Allow TCP 8006 | Hypervisor administration |
+| Management | Required Server Services | Allow | Administrative access |
+| Client | Server | Restricted / Required Services | AD, DNS, security services |
+| Client | Management | Restricted | Protect administrative infrastructure |
 | Clients | Internet | NAT | Internet access |
-| Management | All VLANs | Allow | Administrative access |
 | Servers | Internet | Restricted | Controlled outbound traffic |
+
+---
+
+# Troubleshooting & Validation Highlights
+
+## VLAN and DHCP Troubleshooting
+
+WIN11-01 initially received an APIPA address:
+
+```text
+169.254.x.x
+```
+
+This indicated that the workstation was not receiving a DHCP offer.
+
+Troubleshooting included:
+
+- Proxmox bridge validation
+- VLAN tag validation
+- pfSense LAN configuration
+- DHCP scope validation
+- Firewall inspection
+
+The issue was traced to a VLAN tagging mismatch between WIN11-01 and the native pfSense LAN interface.
+
+After correcting the VM network configuration and renewing DHCP:
+
+```powershell
+ipconfig /release
+ipconfig /renew
+```
+
+WIN11-01 successfully received:
+
+```text
+192.168.10.101
+```
+
+## Active Directory DNS Troubleshooting
+
+The workstation initially used pfSense for DNS:
+
+```text
+192.168.10.1
+```
+
+As a result:
+
+```text
+nslookup dc01
+```
+
+could not resolve the Active Directory host.
+
+WIN11-01 was reconfigured to use DC01:
+
+```text
+192.168.20.20
+```
+
+Resolution was then validated using:
+
+```text
+nslookup dc01.homelab.local 192.168.20.20
+```
+
+This demonstrated the critical dependency Active Directory has on correctly configured DNS.
+
+## Domain Controller Availability
+
+During troubleshooting, DNS queries initially failed because DC01 was powered off.
+
+Once DC01 was started, the workstation successfully reached:
+
+```text
+192.168.20.20
+```
+
+and Active Directory DNS services became available.
+
+This demonstrated the dependency domain endpoints have on core infrastructure services.
+
+## Group Policy Validation
+
+Rather than assuming that the GPO was applied, policy deployment was explicitly validated using:
+
+```powershell
+gpupdate /force
+gpresult /r /scope computer
+auditpol /get /category:*
+```
+
+This confirmed both the policy source and the effective Windows audit configuration.
 
 ---
 
@@ -497,15 +1108,62 @@ Deploy Active Directory Domain Services (AD DS) to provide centralized authentic
 
 ✅ Phase 6 — Active Directory Domain Services
 
-⬜ Phase 7 — Windows 11 Enterprise Client
+✅ Phase 7 — Windows 11 Enterprise Client
 
-⬜ Phase 8 — Group Policy
+✅ Phase 8 — Group Policy & Windows Security Auditing
 
-⬜ Phase 9 — Sysmon
+🔄 Phase 9 — Wazuh Windows 11 Endpoint Integration
 
-⬜ Phase 10 — Splunk Enterprise
+⬜ Phase 10 — Sysmon
 
-⬜ Phase 11 — Attack Simulation & Detection
+⬜ Phase 11 — Splunk Enterprise
+
+⬜ Phase 12 — Attack Simulation & Detection
+
+---
+
+# Next Phase – Wazuh Windows 11 Endpoint Integration
+
+The next phase will integrate WIN11-01 with the existing Wazuh SIEM infrastructure.
+
+Planned objectives include:
+
+- Install Wazuh Agent on WIN11-01
+- Register WIN11-01 with the Wazuh Manager
+- Verify secure agent communication
+- Confirm Windows Security Event ingestion
+- Generate controlled authentication failures
+- Identify Windows Event ID 4625 activity in Wazuh
+- Analyze security alerts through the Wazuh Dashboard
+- Validate centralized endpoint monitoring
+
+The target telemetry path is:
+
+```text
+WIN11-01
+    |
+    v
+Windows Security Events
+    |
+    v
+Wazuh Agent
+    |
+    v
+VLAN 10 - Client
+    |
+    v
+pfSense Inter-VLAN Routing
+    |
+    v
+VLAN 20 - Server
+    |
+    v
+Wazuh Manager
+192.168.20.10
+    |
+    v
+Wazuh Dashboard / Detection
+```
 
 ---
 
@@ -513,41 +1171,69 @@ Deploy Active Directory Domain Services (AD DS) to provide centralized authentic
 
 Planned enhancements include:
 
-- Windows 11 Enterprise Client
-- Domain Join Automation
-- Group Policy Objects (GPOs)
-- Sysmon Deployment
-- Splunk Enterprise
+- WIN11-01 Wazuh integration
+- Sysmon deployment
+- Sysmon configuration tuning
 - Windows Event Forwarding (WEF)
-- Active Directory User Management
-- Organizational Units (OUs)
-- Security Groups
+- Splunk Enterprise
+- File Integrity Monitoring
+- Wazuh vulnerability detection
+- OpenVAS / Greenbone vulnerability scanning
+- Additional Active Directory Organizational Units
+- Additional Security Groups
 - Service Accounts
-- Attack Simulation
-- Detection Engineering
-- SIEM Alert Tuning
-- Backup and Recovery Strategy
+- Active Directory security hardening
+- Authentication attack simulation
+- Detection engineering
+- Custom Wazuh rules
+- SIEM alert tuning
+- IDS/IPS implementation
+- Incident response exercises
+- Backup and recovery strategy
 
 ---
 
 # Key Takeaways
 
-This project demonstrates the design, deployment, and administration of an enterprise-style cybersecurity homelab using industry-standard infrastructure and security technologies.
+This project demonstrates the design, deployment, administration, security hardening, monitoring, and troubleshooting of an enterprise-style cybersecurity homelab using industry-standard infrastructure and security technologies.
 
 Key technologies include:
 
 - Proxmox VE
 - pfSense
 - Ubuntu Server
+- Linux Mint
 - Wazuh SIEM
 - Windows Server 2022
+- Windows 11 Pro
 - Active Directory Domain Services
 - DNS
-- Windows Administration
+- Group Policy
+- Windows Defender Firewall
+- Windows Advanced Audit Policy
+- Windows Security Event Logs
 - Linux Administration
+- Windows Administration
 - Network Segmentation
+- VLANs
 - Virtualization
 - Firewall Administration
 - Endpoint Monitoring
 
-The environment will continue to expand with additional enterprise infrastructure, Windows administration, detection engineering, attack simulations, and blue-team security operations to further simulate a production enterprise environment.
+Key technical outcomes include:
+
+- Built a VLAN-segmented virtual network from scratch
+- Implemented pfSense firewall-based access controls
+- Deployed centralized SIEM infrastructure
+- Built an Active Directory domain using Windows Server 2022
+- Configured Active Directory-integrated DNS
+- Deployed and domain-joined a Windows 11 workstation
+- Implemented Organizational Units, users, and security groups
+- Centrally managed workstation security through Group Policy
+- Configured Windows Defender Firewall through domain policy
+- Implemented Advanced Windows security auditing
+- Generated and analyzed Windows authentication failure events
+- Troubleshot VLAN, DHCP, DNS, firewall, domain, and Group Policy issues
+- Validated security controls rather than assuming successful deployment
+
+The environment will continue to expand with additional endpoint monitoring, Sysmon telemetry, vulnerability management, detection engineering, attack simulation, SIEM analysis, and blue-team security operations to further simulate a production enterprise environment.

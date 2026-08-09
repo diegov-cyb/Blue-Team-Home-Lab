@@ -509,19 +509,19 @@ homelab\administrator
 ### Figure 10 – Server Manager
 
 <p align="center">
-<img src="images/windows/server-manager.png" width="900">
+<img src="images/active-directory/server-manager.png" width="900">
 </p>
 
 ### Figure 11 – Static Network Configuration
 
 <p align="center">
-<img src="images/windows/network-settings.png" width="850">
+<img src="images/active-directory/static-network-configuration.png" width="850">
 </p>
 
 ### Figure 12 – Server Validation
 
 <p align="center">
-<img src="images/windows/server-validation.png" width="850">
+<img src="images/active-directory/dc01-validation.png" width="850">
 </p>
 
 ### Outcome
@@ -562,13 +562,13 @@ Deploy Active Directory Domain Services (AD DS) to provide centralized authentic
 ### Figure 13 – Active Directory Users and Computers
 
 <p align="center">
-<img src="images/active-directory/aduc.png" width="900">
+<img src="images/active-directory.png" width="900">
 </p>
 
 ### Figure 14 – DNS Manager
 
 <p align="center">
-<img src="images/active-directory/dns-manager.png" width="900">
+<img src="images/active-directory/dns-manager-validation.png" width="900">
 </p>
 
 ### Outcome
@@ -645,7 +645,7 @@ images/windows11/domain-join.png
 -->
 
 <p align="center">
-<img src="images/windows11/domain-join.png" width="850">
+<img src="images/active-directory/win11-domain-join.png" width="850">
 </p>
 
 ### Figure 16 – Domain Authentication Validation
@@ -683,7 +683,7 @@ images/windows11/domain-validation.png
 -->
 
 <p align="center">
-<img src="images/windows11/domain-validation.png" width="850">
+<img src="images/active-directory/domain-authentication-validation.png" width="850">
 </p>
 
 ### Active Directory Organization
@@ -719,7 +719,7 @@ images/active-directory/workstations-ou.png
 -->
 
 <p align="center">
-<img src="images/active-directory/workstations-ou.png" width="850">
+<img src="images/active-directory/workstation-ou.png" width="850">
 </p>
 
 ### Figure 18 – IT-Admins Security Group
@@ -738,7 +738,7 @@ images/active-directory/it-admins.png
 -->
 
 <p align="center">
-<img src="images/active-directory/it-admins.png" width="850">
+<img src="images/active-directory/it-admins-security-group.png" width="850">
 </p>
 
 ### Outcome
@@ -814,7 +814,7 @@ images/group-policy/workstation-security-baseline.png
 -->
 
 <p align="center">
-<img src="images/group-policy/workstation-security-baseline.png" width="900">
+<img src="images/active-directory/workstation-security-baseline-gpo.png" width="900">
 </p>
 
 ### Figure 20 – Windows Defender Firewall Group Policy
@@ -841,7 +841,7 @@ images/group-policy/windows-firewall-policy.png
 -->
 
 <p align="center">
-<img src="images/group-policy/windows-firewall-policy.png" width="900">
+<img src="images/active-directory/windows-defender-firewall-gpo.png" width="900">
 </p>
 
 ### Group Policy Validation
@@ -890,7 +890,7 @@ images/group-policy/gpresult-validation.png
 -->
 
 <p align="center">
-<img src="images/group-policy/gpresult-validation.png" width="900">
+<img src="images/active-directory/gpo-application-validation-win11.png" width="900">
 </p>
 
 ### Advanced Audit Policy Validation
@@ -917,7 +917,7 @@ images/group-policy/audit-policy-validation.png
 -->
 
 <p align="center">
-<img src="images/group-policy/audit-policy-validation.png" width="900">
+<img src="images/active-directory/advanced-audit-policy-validation-win11.png" width="900">
 </p>
 
 ### Windows Security Event Validation
@@ -950,7 +950,7 @@ images/group-policy/event-4625.png
 -->
 
 <p align="center">
-<img src="images/group-policy/event-4625.png" width="900">
+<img src="images/active-directory/advanced-audit-policy-validation-win11.png" width="900">
 </p>
 
 ### Security Telemetry Flow

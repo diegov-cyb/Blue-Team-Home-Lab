@@ -1112,9 +1112,9 @@ This confirmed both the policy source and the effective Windows audit configurat
 
 ✅ Phase 8 — Group Policy & Windows Security Auditing
 
-🔄 Phase 9 — Wazuh Windows 11 Endpoint Integration
+✅ Phase 9 — Wazuh Windows 11 Endpoint Integration
 
-⬜ Phase 10 — Sysmon
+🔄 Phase 10 — Sysmon
 
 ⬜ Phase 11 — Splunk Enterprise
 
@@ -1122,22 +1122,26 @@ This confirmed both the policy source and the effective Windows audit configurat
 
 ---
 
-# Next Phase – Wazuh Windows 11 Endpoint Integration
+# Phase 9 – Wazuh Windows 11 Endpoint Integration
 
-The next phase will integrate WIN11-01 with the existing Wazuh SIEM infrastructure.
+WIN11-01 was integrated with the existing Wazuh SIEM infrastructure to provide centralized endpoint security monitoring and Windows event analysis.
 
-Planned objectives include:
+The Wazuh Agent was installed and registered with the Wazuh Manager, establishing communication between the Windows 11 workstation and the centralized monitoring infrastructure.
 
-- Install Wazuh Agent on WIN11-01
-- Register WIN11-01 with the Wazuh Manager
-- Verify secure agent communication
-- Confirm Windows Security Event ingestion
-- Generate controlled authentication failures
-- Identify Windows Event ID 4625 activity in Wazuh
-- Analyze security alerts through the Wazuh Dashboard
-- Validate centralized endpoint monitoring
+Validation included:
 
-The target telemetry path is:
+- Installed the Wazuh Agent on WIN11-01
+- Registered WIN11-01 with the Wazuh Manager
+- Verified the endpoint reported as an active Wazuh agent
+- Confirmed Windows Security Event ingestion
+- Generated controlled successful and failed authentication attempts
+- Identified Windows Event ID 4625 authentication failures
+- Reviewed authentication activity through the Wazuh Dashboard
+- Analyzed detailed failed logon event data
+- Confirmed Wazuh alert generation for failed authentication activity
+- Validated centralized endpoint monitoring across the segmented network
+
+The validated telemetry path is:
 
 ```text
 WIN11-01
@@ -1165,13 +1169,26 @@ Wazuh Manager
 Wazuh Dashboard / Detection
 ```
 
+This validation demonstrated that security events generated on a domain-joined Windows endpoint could be collected, transported across the segmented environment, analyzed by Wazuh, and presented as centralized security alerts.
+
+### Figure 24 – Wazuh Windows 11 Endpoint Monitoring
+
+![Wazuh Windows 11 Endpoint Monitoring](images/wazuh/wazuh-win11-endpoint-monitoring.png)
+
+WIN11-01 reporting to the Wazuh Manager as an active endpoint, confirming successful agent registration and centralized monitoring.
+
+### Figure 25 – Failed Authentication Detection
+
+![Wazuh Failed Authentication Detection](images/wazuh/wazuh-failed-authentication-detection.png)
+
+Controlled authentication testing generated Windows Event ID 4625 activity. Wazuh ingested the Windows Security event and generated a failed authentication alert, validating endpoint telemetry and SIEM detection.
+
 ---
 
 # Future Expansion
 
 Planned enhancements include:
 
-- WIN11-01 Wazuh integration
 - Sysmon deployment
 - Sysmon configuration tuning
 - Windows Event Forwarding (WEF)
@@ -1235,5 +1252,10 @@ Key technical outcomes include:
 - Generated and analyzed Windows authentication failure events
 - Troubleshot VLAN, DHCP, DNS, firewall, domain, and Group Policy issues
 - Validated security controls rather than assuming successful deployment
+- Integrated the Windows 11 endpoint with Wazuh SIEM
+- Validated centralized Windows Security Event ingestion
+- Generated controlled authentication activity for SIEM validation
+- Detected and analyzed Windows Event ID 4625 failed authentication events
+- Correlated Windows authentication activity with Wazuh security alerts
 
-The environment will continue to expand with additional endpoint monitoring, Sysmon telemetry, vulnerability management, detection engineering, attack simulation, SIEM analysis, and blue-team security operations to further simulate a production enterprise environment.
+The environment will continue to expand with Sysmon telemetry, vulnerability management, detection engineering, attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.

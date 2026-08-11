@@ -562,7 +562,7 @@ Deploy Active Directory Domain Services (AD DS) to provide centralized authentic
 ### Figure 13 – Active Directory Users and Computers
 
 <p align="center">
-<img src="images/active-directory.png" width="900">
+<img src="images/active-directory/active-directory-users-computers.png" width="900">
 </p>
 
 ### Figure 14 – DNS Manager

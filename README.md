@@ -1114,9 +1114,9 @@ This confirmed both the policy source and the effective Windows audit configurat
 
 ✅ Phase 9 — Wazuh Windows 11 Endpoint Integration
 
-🔄 Phase 10 — Sysmon
+✅ Phase 10 — Sysmon
 
-⬜ Phase 11 — Splunk Enterprise
+🔄 Phase 11 — Splunk Enterprise
 
 ⬜ Phase 12 — Attack Simulation & Detection
 
@@ -1185,12 +1185,79 @@ Controlled authentication testing generated Windows Event ID 4625 activity. Wazu
 
 ---
 
+# Phase 10 – Sysmon Endpoint Telemetry
+
+Sysmon was deployed on WIN11-01 to extend endpoint visibility beyond standard Windows Security auditing and provide detailed system activity for centralized analysis.
+
+Microsoft Sysinternals Sysmon was installed using a modular Sysmon configuration designed to capture security-relevant endpoint activity.
+
+Validation included:
+
+- Installed Sysmon on WIN11-01
+- Applied and validated a Sysmon XML configuration
+- Verified the Sysmon service and driver started successfully
+- Confirmed Sysmon events were generated locally
+- Validated telemetry through the Microsoft-Windows-Sysmon/Operational event channel
+- Observed process creation and file creation activity
+- Configured the Wazuh Agent to collect the Sysmon Operational event channel
+- Restarted the Wazuh Agent to apply the updated configuration
+- Confirmed Sysmon telemetry was forwarded to the Wazuh Manager
+- Verified Wazuh applied Sysmon-specific detection rules
+- Analyzed Sysmon-generated security alerts through the Wazuh Dashboard
+
+The validated telemetry path is:
+
+```text
+WIN11-01
+    |
+    v
+Sysmon
+    |
+    v
+Microsoft-Windows-Sysmon/Operational
+    |
+    v
+Wazuh Agent
+    |
+    v
+VLAN 10 - Client
+    |
+    v
+pfSense Inter-VLAN Routing
+    |
+    v
+VLAN 20 - Server
+    |
+    v
+Wazuh Manager
+192.168.20.10
+    |
+    v
+Wazuh Detection Rules / Dashboard
+```
+
+### Figure 26 – Sysmon Endpoint Telemetry
+
+<p align="center">
+<img src="images/sysmon/sysmon-event-viewer.png" width="900">
+</p>
+
+WIN11-01 generating Sysmon telemetry within the Microsoft-Windows-Sysmon/Operational event channel, confirming successful Sysmon deployment and local event generation.
+
+### Figure 27 – Sysmon Detection in Wazuh
+
+<p align="center">
+<img src="images/sysmon/wazuh-sysmon-detection.png" width="900">
+</p>
+
+Sysmon telemetry from WIN11-01 ingested by Wazuh and matched against Sysmon-specific detection rules, validating centralized collection, endpoint visibility, and SIEM detection.
+
+---
+
 # Future Expansion
 
 Planned enhancements include:
 
-- Sysmon deployment
-- Sysmon configuration tuning
 - Windows Event Forwarding (WEF)
 - Splunk Enterprise
 - File Integrity Monitoring
@@ -1257,5 +1324,12 @@ Key technical outcomes include:
 - Generated controlled authentication activity for SIEM validation
 - Detected and analyzed Windows Event ID 4625 failed authentication events
 - Correlated Windows authentication activity with Wazuh security alerts
+- Deployed Sysmon on the Windows 11 endpoint
+- Applied a security-focused Sysmon configuration
+- Validated local Sysmon event generation
+- Integrated Sysmon telemetry with the Wazuh Agent
+- Forwarded Sysmon events across the segmented network to the Wazuh Manager
+- Detected and analyzed Sysmon activity using Wazuh detection rules
+- Expanded endpoint visibility beyond standard Windows Security auditing
 
 The environment will continue to expand with Sysmon telemetry, vulnerability management, detection engineering, attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.

@@ -22,6 +22,8 @@ The goal of this project is to demonstrate enterprise infrastructure deployment,
 - Phase 6 – Active Directory Domain Services
 - Phase 7 – Windows 11 Enterprise Client
 - Phase 8 – Group Policy & Security Auditing
+- Phase 9 - Wazuh Windows 11 Endpoint Integration
+- Phase 10 - Sysmon Endpoint Telemetry
 - Firewall Policy Summary
 - Project Timeline
 - Future Expansion
@@ -48,6 +50,7 @@ The environment currently includes:
 - Windows Defender Firewall management
 - Advanced Windows security auditing
 - Wazuh SIEM
+- Sysmon endpoint telemetry
 - Linux administration
 - Windows and Linux endpoint monitoring
 - Enterprise network architecture
@@ -107,6 +110,9 @@ The environment currently includes:
 - Endpoint Monitoring
 - Windows Agent Deployment
 - Linux Agent Deployment
+- Sysmon Deployment
+- Sysmon Configuration
+- Endpoint Telemetry Collection
 - Windows Defender Firewall
 - Group Policy Security Baselines
 - Advanced Audit Policy
@@ -185,6 +191,10 @@ The environment currently includes:
 - Domain: `homelab.local`
 - Workstations OU
 - Workstation Security Baseline GPO
+- Wazuh Agent
+- Sysmon
+- Modular Sysmon Configuration
+- Sysmon Operational Event Collection
 
 ---
 
@@ -218,13 +228,12 @@ graph TD
     WIN11 -->|DNS / Kerberos / Active Directory| DC01
     MINT -->|Wazuh Agent| WAZUH
     DC01 -->|Wazuh Agent| WAZUH
-    WIN11 -.->|Planned Wazuh Agent / Security Telemetry| WAZUH
+    WIN11 -->|Wazuh Agent / Sysmon + Windows Security Telemetry| WAZUH
 ```
 
 The environment separates administrative systems, client endpoints, and server infrastructure while allowing required communication through pfSense firewall policies.
 
-WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain controller for Active Directory DNS. Security telemetry is centralized through the Wazuh Manager.
-
+WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain controller for Active Directory DNS. Windows Security and Sysmon telemetry from WIN11-01 are collected by the Wazuh Agent and forwarded across the segmented network to the Wazuh Manager for centralized detection and analysis.
 ---
 
 # Completed Features
@@ -258,6 +267,16 @@ WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain c
 - Windows Defender Firewall policy
 - Advanced Windows auditing
 - Windows authentication event validation
+- Wazuh Windows 11 Agent deployment
+- Windows Security Event ingestion
+- Failed authentication detection
+- Windows Event ID 4625 analysis
+- Sysmon deployment
+- Modular Sysmon configuration
+- Sysmon Operational event collection
+- Wazuh Sysmon integration
+- Sysmon detection rule validation
+- Centralized Sysmon telemetry analysis
 
 ---
 
@@ -387,7 +406,7 @@ Network connectivity was validated by testing communication between VLANs and ve
 
 ### Troubleshooting Insight
 
-During testing, ICMP communication sometimes ailed while HTTPS access to the pfSense WebGUI remained functional.
+During testing, ICMP communication sometimes failed while HTTPS access to the pfSense WebGUI remained functional.
 
 This demonstrated that the issue was caused by protocol-specific firewall policy rather than general network connectivity. 
 
@@ -480,7 +499,7 @@ Deploy Windows Server 2022 as the enterprise server platform that will host Acti
 ### Configuration
 
 
-- Deployed Windows 11 virtual machine in Proxmox VE
+- Deployed Windows Server 2022 virtual machine in Proxmox VE
 - Configured VirtIO networking
 - Installed VirtIO drivers
 - Installed QEMU Guest Agent
@@ -1332,4 +1351,4 @@ Key technical outcomes include:
 - Detected and analyzed Sysmon activity using Wazuh detection rules
 - Expanded endpoint visibility beyond standard Windows Security auditing
 
-The environment will continue to expand with Sysmon telemetry, vulnerability management, detection engineering, attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.
+The environment will continue to expand with Splunk Enterprise, vulnerability management, detection engineering, attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.

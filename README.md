@@ -1375,13 +1375,17 @@ Splunk analyzed Windows Security Event ID 4625 activity from WIN11-01 and identi
 
 ### Figure 29 – Splunk Triggered Alert
 
-![Splunk Triggered Alert](images/splunk/splunk-triggered-alert.png)
+<p align="center">
+<img src="images/splunk/splunk-triggered-alert.png" width="900">
+</p>
 
 The repeated failed-login detection was converted into a scheduled Splunk alert. Controlled authentication testing successfully triggered the detection, validating the configured threshold and alert schedule.
 
 ### Figure 30 – Automated Email Alert Notification
 
-![Splunk Email Notification](images/splunk/splunk-email-notification.png)
+<p align="center">
+<img src="images/splunk/splunk-email-notification.png" width="700">
+</p>
 
 Splunk successfully generated and delivered an email notification after the repeated failed-login detection criteria were met, validating the complete workflow from Windows event generation through detection and alert notification.
 

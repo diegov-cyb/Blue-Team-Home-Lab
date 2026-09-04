@@ -1369,7 +1369,9 @@ This phase demonstrated the transition from simple centralized log collection in
 
 ### Figure 28 – Repeated Failed Login Detection
 
-![Splunk Failed Login Detection](images/splunk/splunk-4625-detection.png)
+<p align="center">
+<img src="images/splunk/splunk-4625-detection.png" width="900">
+</p>
 
 Splunk analyzed Windows Security Event ID 4625 activity from WIN11-01 and identified repeated failed authentication attempts using a custom SPL detection query.
 

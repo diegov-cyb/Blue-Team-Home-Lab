@@ -1232,13 +1232,17 @@ This validation demonstrated that security events generated on a domain-joined W
 
 ### Figure 24 – Wazuh Windows 11 Endpoint Monitoring
 
-![Wazuh Windows 11 Endpoint Monitoring](images/wazuh/wazuh-win11-endpoint-monitoring.png)
+<p align="center">
+<img src="images/wazuh/wazuh-win11-endpoint-monitoring.png" width="900">
+</p>
 
 WIN11-01 reporting to the Wazuh Manager as an active endpoint, confirming successful agent registration and centralized monitoring.
 
 ### Figure 25 – Failed Authentication Detection
 
-![Wazuh Failed Authentication Detection](images/wazuh/wazuh-failed-authentication-detection.png)
+<p align="center">
+<img src="images/wazuh/wazuh-failed-authentication-detection.png" width="900">
+</p>
 
 Controlled authentication testing generated Windows Event ID 4625 activity. Wazuh ingested the Windows Security event and generated a failed authentication alert, validating endpoint telemetry and SIEM detection.
 

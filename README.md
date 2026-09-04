@@ -24,6 +24,7 @@ The goal of this project is to demonstrate enterprise infrastructure deployment,
 - Phase 8 – Group Policy & Security Auditing
 - Phase 9 - Wazuh Windows 11 Endpoint Integration
 - Phase 10 - Sysmon Endpoint Telemetry
+- Phase 11 - Splunk Enterprise Detection & Alerting
 - Firewall Policy Summary
 - Project Timeline
 - Future Expansion
@@ -51,6 +52,11 @@ The environment currently includes:
 - Advanced Windows security auditing
 - Wazuh SIEM
 - Sysmon endpoint telemetry
+- Splunk Enterprise
+- Windows Security log forwarding
+- SPL-based detection engineering
+- Scheduled security alerting
+- Email alert notifications
 - Linux administration
 - Windows and Linux endpoint monitoring
 - Enterprise network architecture
@@ -120,6 +126,14 @@ The environment currently includes:
 - Windows Event ID Analysis
 - Firewall Rule Creation
 - Security Validation and Troubleshooting
+- Splunk Enterprise
+- Splunk Universal Forwarder
+- Windows Security Log Ingestion
+- SPL Query Development
+- Detection Engineering
+- Scheduled Alert Configuration
+- Security Event Correlation
+- Email Alert Integration
 
 ---
 
@@ -164,6 +178,17 @@ The environment currently includes:
 - Wazuh Indexer
 - Endpoint Monitoring
 
+### Splunk Enterprise
+
+- Hostname: `SPLUNK01`
+- VLAN: 20
+- Splunk Enterprise
+- Windows Security Log Ingestion
+- Splunk Universal Forwarder Receiver
+- SPL Detection Queries
+- Scheduled Alerting
+- Email Alert Notifications
+
 ## Windows Server
 
 ### DC01
@@ -195,6 +220,8 @@ The environment currently includes:
 - Sysmon
 - Modular Sysmon Configuration
 - Sysmon Operational Event Collection
+- Splunk Universal Forwarder
+- Windows Application, Security, and System log forwarding
 
 ---
 
@@ -224,16 +251,18 @@ graph TD
 
     SERVER --> DC01[DC01<br/>Windows Server 2022<br/>AD DS + DNS<br/>192.168.20.20]
     SERVER --> WAZUH[Wazuh Manager<br/>192.168.20.10]
+    SERVER --> SPLUNK[Splunk Enterprise<br/>SPLUNK01]
 
     WIN11 -->|DNS / Kerberos / Active Directory| DC01
     MINT -->|Wazuh Agent| WAZUH
     DC01 -->|Wazuh Agent| WAZUH
     WIN11 -->|Wazuh Agent / Sysmon + Windows Security Telemetry| WAZUH
+    WIN11 -->|Splunk Universal Forwarder<br/>Windows Event Logs| SPLUNK
 ```
 
 The environment separates administrative systems, client endpoints, and server infrastructure while allowing required communication through pfSense firewall policies.
 
-WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain controller for Active Directory DNS. Windows Security and Sysmon telemetry from WIN11-01 are collected by the Wazuh Agent and forwarded across the segmented network to the Wazuh Manager for centralized detection and analysis.
+WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain controller for Active Directory DNS. Windows Security and Sysmon telemetry from WIN11-01 are collected by Wazuh for centralized endpoint monitoring and detection. In parallel, Windows Application, Security, and System logs are forwarded from WIN11-01 to Splunk Enterprise, where SPL queries are used for detection engineering, scheduled alerting, and security event analysis.
 ---
 
 # Completed Features
@@ -277,6 +306,17 @@ WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain c
 - Wazuh Sysmon integration
 - Sysmon detection rule validation
 - Centralized Sysmon telemetry analysis
+- Splunk Enterprise deployment
+- Splunk Universal Forwarder deployment
+- Windows Application, Security, and System log ingestion
+- Centralized Splunk event analysis
+- SPL detection query development
+- Windows Event ID 4625 detection
+- Repeated failed-login detection
+- Scheduled Splunk alert configuration
+- Triggered alert validation
+- Email security alert notification
+- Proxmox storage expansion and LVM-Thin storage management
 
 ---
 
@@ -1135,9 +1175,9 @@ This confirmed both the policy source and the effective Windows audit configurat
 
 ✅ Phase 10 — Sysmon
 
-🔄 Phase 11 — Splunk Enterprise
+✅ Phase 11 — Splunk Enterprise Detection & Alerting
 
-⬜ Phase 12 — Attack Simulation & Detection
+🔄 Phase 12 — Attack Simulation & Detection
 
 ---
 
@@ -1273,12 +1313,106 @@ Sysmon telemetry from WIN11-01 ingested by Wazuh and matched against Sysmon-spec
 
 ---
 
+# Phase 11 – Splunk Enterprise Detection & Alerting
+
+Splunk Enterprise was deployed to extend the homelab's SIEM and detection-engineering capabilities and provide a second platform for centralized Windows event analysis.
+
+A Splunk Universal Forwarder was installed on WIN11-01 and configured to forward Windows Application, Security, and System event logs to Splunk Enterprise. 
+
+Validation included:
+
+- Deployed Splunk Enterprise within the Proxmox environment
+- Installed the Splunk Universal Forwarder on WIN11-01
+- Configured Windows Application, Security, and System log forwarding
+- Verified active communication between WIN11-01 and Splunk Enterprise
+- Confirmed centralized Windows event ingestion
+- Generated controlled failed authentication attempts
+- Identified Windows Event ID 4625 activity in Splunk
+- Developed an SPL query to identify repeated failed logins
+- Applied a threshold requiring multiple failed authentication attempts within a defined time window
+- Converted the detection query into a scheduled Splunk alert
+- Configured the alert to execute every five minutes
+- Validated successful alert triggering
+- Integrated SMTP-based email notifications
+- Confirmed successful end-to-end delivery of the security alert by email
+
+The validated detection workflow is:
+
+```
+    WIN11-01
+        |
+        v
+    Windows Security Events
+        |
+        v
+    Splunk Universal Forwarder
+        |
+        v
+    Splunk Enterprise
+        |
+        v
+    SPL Detection Query
+        |
+        v
+    Repeated Failed Login Detection
+        |
+        v
+    Scheduled Alert
+        |
+        v
+    Email Notification
+```
+
+A detection was created for repeated failed Windows logon activity using Event ID 4625. Failed authentication attempts were grouped by account and source, and the detection was configured to alert when the defined threshold was exceeded.
+
+This phase demonstrated the transition from simple centralized log collection into practical detection engineering and automated alerting.
+
+### Figure 28 – Repeated Failed Login Detection
+
+![Splunk Failed Login Detection](images/splunk/splunk-4625-detection.png)
+
+Splunk analyzed Windows Security Event ID 4625 activity from WIN11-01 and identified repeated failed authentication attempts using a custom SPL detection query.
+
+### Figure 29 – Splunk Triggered Alert
+
+![Splunk Triggered Alert](images/splunk/splunk-triggered-alert.png)
+
+The repeated failed-login detection was converted into a scheduled Splunk alert. Controlled authentication testing successfully triggered the detection, validating the configured threshold and alert schedule.
+
+### Figure 30 – Automated Email Alert Notification
+
+![Splunk Email Notification](images/splunk/splunk-email-notification.png)
+
+Splunk successfully generated and delivered an email notification after the repeated failed-login detection criteria were met, validating the complete workflow from Windows event generation through detection and alert notification.
+
+### Troubleshooting Insight
+
+During implementation, troubleshooting was required across multiple layers of the environment.
+
+Storage pressure on the Proxmox host contributed to virtual machine instability and required expansion of available storage resources. The Splunk Universal Forwarder installation on WIN11-01 also required repair after configuration corruption was identified. After reinstalling and validating the forwarder, Windows event ingestion resumed successfully.
+
+SMTP alerting required additional troubleshooting after the detection itself was confirmed to be functioning. Splunk alert history verified that the scheduled detection was triggering correctly, allowing the issue to be isolated to email authentication rather than the SPL query or event pipeline.
+
+This reinforced the value of troubleshooting each layer independently: event generation, forwarding, ingestion, detection logic, alert scheduling, and notification delivery.
+
+### Outcome
+
+* Splunk Enterprise successfully deployed
+* Windows endpoint log forwarding established
+* Centralized Windows event ingestion validated
+* SPL-based detection engineering implemented
+* Repeated failed authentication activity detected
+* Scheduled security alert successfully triggered
+* Email notification workflow successfully validated
+* End-to-end detection and alerting pipeline operational
+
+---
+
 # Future Expansion
 
 Planned enhancements include:
 
 - Windows Event Forwarding (WEF)
-- Splunk Enterprise
 - File Integrity Monitoring
 - Wazuh vulnerability detection
 - OpenVAS / Greenbone vulnerability scanning
@@ -1322,6 +1456,9 @@ Key technologies include:
 - Virtualization
 - Firewall Administration
 - Endpoint Monitoring
+- Splunk Enterprise
+- Splunk Universal Forwarder
+- SPL
 
 Key technical outcomes include:
 
@@ -1350,5 +1487,12 @@ Key technical outcomes include:
 - Forwarded Sysmon events across the segmented network to the Wazuh Manager
 - Detected and analyzed Sysmon activity using Wazuh detection rules
 - Expanded endpoint visibility beyond standard Windows Security auditing
+- Deployed Splunk Enterprise for centralized Windows event analysis
+- Configured Splunk Universal Forwarder on WIN11-01
+- Validated Windows Application, Security, and System log ingestion
+- Developed an SPL detection for repeated failed Windows logons
+- Converted detection logic into a scheduled security alert
+- Validated automated email notification delivery
+- Troubleshot the detection pipeline from endpoint telemetry through alert notification
 
-The environment will continue to expand with Splunk Enterprise, vulnerability management, detection engineering, attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.
+The environment will continue to expand with vulnerability management, additional detection engineering, controlled attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.

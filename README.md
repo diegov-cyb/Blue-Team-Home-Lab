@@ -12,21 +12,22 @@ The goal of this project is to demonstrate enterprise infrastructure deployment,
 - Skills Demonstrated
 - Current Lab Environment
 - Architecture
+- Project Timeline
 - Completed Features
 - Implementation Journey
-- Phase 1 – Network Planning
-- Phase 2 – Proxmox VE Deployment
-- Phase 3 – pfSense Firewall & Network Segmentation
-- Phase 4 – Wazuh SIEM Deployment
-- Phase 5 – Windows Server 2022 Deployment
-- Phase 6 – Active Directory Domain Services
-- Phase 7 – Windows 11 Enterprise Client
-- Phase 8 – Group Policy & Security Auditing
-- Phase 9 - Wazuh Windows 11 Endpoint Integration
-- Phase 10 - Sysmon Endpoint Telemetry
-- Phase 11 - Splunk Enterprise Detection & Alerting
+    - Phase 1 – Network Planning
+    - Phase 2 – Proxmox VE Deployment
+    - Phase 3 – pfSense Firewall & Network Segmentation
+    - Phase 4 – Wazuh SIEM Deployment
+    - Phase 5 – Windows Server 2022 Deployment
+    - Phase 6 – Active Directory Domain Services
+    - Phase 7 – Windows 11 Enterprise Client
+    - Phase 8 – Group Policy & Security Auditing
+    - Phase 9 – Wazuh Windows 11 Endpoint Integration
+    - Phase 10 – Sysmon Endpoint Telemetry
+    - Phase 11 – Splunk Enterprise Detection & Alerting
 - Firewall Policy Summary
-- Project Timeline
+- Troubleshooting & Validation Highlights
 - Future Expansion
 - Key Takeaways
 
@@ -263,6 +264,35 @@ graph TD
 The environment separates administrative systems, client endpoints, and server infrastructure while allowing required communication through pfSense firewall policies.
 
 WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain controller for Active Directory DNS. Windows Security and Sysmon telemetry from WIN11-01 are collected by Wazuh for centralized endpoint monitoring and detection. In parallel, Windows Application, Security, and System logs are forwarded from WIN11-01 to Splunk Enterprise, where SPL queries are used for detection engineering, scheduled alerting, and security event analysis.
+
+---
+
+# Project Timeline
+
+✅ Phase 1 — Network Planning
+
+✅ Phase 2 — Proxmox VE Deployment
+
+✅ Phase 3 — pfSense Firewall & Network Segmentation
+
+✅ Phase 4 — Wazuh SIEM Deployment
+
+✅ Phase 5 — Windows Server 2022 Deployment
+
+✅ Phase 6 — Active Directory Domain Services
+
+✅ Phase 7 — Windows 11 Enterprise Client
+
+✅ Phase 8 — Group Policy & Windows Security Auditing
+
+✅ Phase 9 — Wazuh Windows 11 Endpoint Integration
+
+✅ Phase 10 — Sysmon
+
+✅ Phase 11 — Splunk Enterprise Detection & Alerting
+
+🔄 Phase 12 — Attack Simulation & Detection
+
 ---
 
 # Completed Features
@@ -966,15 +996,6 @@ The configured policy enables collection of security-relevant authentication, ac
 
 The effective Windows audit configuration was validated directly from the endpoint rather than relying solely on the Group Policy configuration interface.
 
-<!-- SCREENSHOT PLACEHOLDER
-
-Use the auditpol screenshot showing the configured
-Success / Failure auditing.
-
-Suggested filename:
-images/group-policy/audit-policy-validation.png
--->
-
 <p align="center">
 <img src="images/active-directory/advanced-audit-policy-validation-win11.png" width="900">
 </p>
@@ -992,25 +1013,6 @@ Task Category: Logon
 Keywords: Audit Failure
 Computer: WIN11-01.homelab.local
 ```
-
-### Figure 23 – Failed Logon Security Event
-
-Windows Security Event ID 4625 confirmed that failed authentication attempts were successfully being recorded after deployment of the workstation audit policy.
-
-<!-- SCREENSHOT PLACEHOLDER
-
-Use your Event Viewer screenshot showing:
-Event ID 4625
-Audit Failure
-WIN11-01.homelab.local
-
-Suggested filename:
-images/group-policy/event-4625.png
--->
-
-<p align="center">
-<img src="images/active-directory/advanced-audit-policy-validation-win11.png" width="900">
-</p>
 
 ### Security Telemetry Flow
 
@@ -1043,6 +1045,244 @@ The Windows endpoint is now configured to generate the security telemetry requir
 - Failed authentication event successfully generated
 - Event ID 4625 analyzed in Windows Event Viewer
 - WIN11-01 prepared for Wazuh SIEM integration
+
+---
+
+# Phase 9 – Wazuh Windows 11 Endpoint Integration
+
+WIN11-01 was integrated with the existing Wazuh SIEM infrastructure to provide centralized endpoint security monitoring and Windows event analysis.
+
+The Wazuh Agent was installed and registered with the Wazuh Manager, establishing communication between the Windows 11 workstation and the centralized monitoring infrastructure.
+
+Validation included:
+
+- Installed the Wazuh Agent on WIN11-01
+- Registered WIN11-01 with the Wazuh Manager
+- Verified the endpoint reported as an active Wazuh agent
+- Confirmed Windows Security Event ingestion
+- Generated controlled successful and failed authentication attempts
+- Identified Windows Event ID 4625 authentication failures
+- Reviewed authentication activity through the Wazuh Dashboard
+- Analyzed detailed failed logon event data
+- Confirmed Wazuh alert generation for failed authentication activity
+- Validated centralized endpoint monitoring across the segmented network
+
+The validated telemetry path is:
+
+```text
+WIN11-01
+    |
+    v
+Windows Security Events
+    |
+    v
+Wazuh Agent
+    |
+    v
+VLAN 10 - Client
+    |
+    v
+pfSense Inter-VLAN Routing
+    |
+    v
+VLAN 20 - Server
+    |
+    v
+Wazuh Manager
+192.168.20.10
+    |
+    v
+Wazuh Dashboard / Detection
+```
+
+This validation demonstrated that security events generated on a domain-joined Windows endpoint could be collected, transported across the segmented environment, analyzed by Wazuh, and presented as centralized security alerts.
+
+### Figure 23 – Wazuh Windows 11 Endpoint Monitoring
+
+<p align="center">
+<img src="images/wazuh/wazuh-win11-endpoint-monitoring.png" width="900">
+</p>
+
+WIN11-01 reporting to the Wazuh Manager as an active endpoint, confirming successful agent registration and centralized monitoring.
+
+### Figure 24 – Failed Authentication Detection
+
+<p align="center">
+<img src="images/wazuh/wazuh-failed-authentication-detection.png" width="900">
+</p>
+
+Controlled authentication testing generated Windows Event ID 4625 activity. Wazuh ingested the Windows Security event and generated a failed authentication alert, validating endpoint telemetry and SIEM detection.
+
+---
+
+# Phase 10 – Sysmon Endpoint Telemetry
+
+Sysmon was deployed on WIN11-01 to extend endpoint visibility beyond standard Windows Security auditing and provide detailed system activity for centralized analysis.
+
+Microsoft Sysinternals Sysmon was installed using a modular Sysmon configuration designed to capture security-relevant endpoint activity.
+
+Validation included:
+
+- Installed Sysmon on WIN11-01
+- Applied and validated a Sysmon XML configuration
+- Verified the Sysmon service and driver started successfully
+- Confirmed Sysmon events were generated locally
+- Validated telemetry through the Microsoft-Windows-Sysmon/Operational event channel
+- Observed process creation and file creation activity
+- Configured the Wazuh Agent to collect the Sysmon Operational event channel
+- Restarted the Wazuh Agent to apply the updated configuration
+- Confirmed Sysmon telemetry was forwarded to the Wazuh Manager
+- Verified Wazuh applied Sysmon-specific detection rules
+- Analyzed Sysmon-generated security alerts through the Wazuh Dashboard
+
+The validated telemetry path is:
+
+```text
+WIN11-01
+    |
+    v
+Sysmon
+    |
+    v
+Microsoft-Windows-Sysmon/Operational
+    |
+    v
+Wazuh Agent
+    |
+    v
+VLAN 10 - Client
+    |
+    v
+pfSense Inter-VLAN Routing
+    |
+    v
+VLAN 20 - Server
+    |
+    v
+Wazuh Manager
+192.168.20.10
+    |
+    v
+Wazuh Detection Rules / Dashboard
+```
+
+### Figure 25 – Sysmon Endpoint Telemetry
+
+<p align="center">
+<img src="images/sysmon/sysmon-event-viewer.png" width="900">
+</p>
+
+WIN11-01 generating Sysmon telemetry within the Microsoft-Windows-Sysmon/Operational event channel, confirming successful Sysmon deployment and local event generation.
+
+### Figure 26 – Sysmon Detection in Wazuh
+
+<p align="center">
+<img src="images/sysmon/wazuh-sysmon-detection.png" width="900">
+</p>
+
+Sysmon telemetry from WIN11-01 ingested by Wazuh and matched against Sysmon-specific detection rules, validating centralized collection, endpoint visibility, and SIEM detection.
+
+---
+
+# Phase 11 – Splunk Enterprise Detection & Alerting
+
+Splunk Enterprise was deployed to extend the homelab's SIEM and detection-engineering capabilities and provide a second platform for centralized Windows event analysis.
+
+A Splunk Universal Forwarder was installed on WIN11-01 and configured to forward Windows Application, Security, and System event logs to Splunk Enterprise. 
+
+Validation included:
+
+- Deployed Splunk Enterprise within the Proxmox environment
+- Installed the Splunk Universal Forwarder on WIN11-01
+- Configured Windows Application, Security, and System log forwarding
+- Verified active communication between WIN11-01 and Splunk Enterprise
+- Confirmed centralized Windows event ingestion
+- Generated controlled failed authentication attempts
+- Identified Windows Event ID 4625 activity in Splunk
+- Developed an SPL query to identify repeated failed logins
+- Applied a threshold requiring multiple failed authentication attempts within a defined time window
+- Converted the detection query into a scheduled Splunk alert
+- Configured the alert to execute every five minutes
+- Validated successful alert triggering
+- Integrated SMTP-based email notifications
+- Confirmed successful end-to-end delivery of the security alert by email
+
+The validated detection workflow is:
+
+```
+    WIN11-01
+        |
+        v
+    Windows Security Events
+        |
+        v
+    Splunk Universal Forwarder
+        |
+        v
+    Splunk Enterprise
+        |
+        v
+    SPL Detection Query
+        |
+        v
+    Repeated Failed Login Detection
+        |
+        v
+    Scheduled Alert
+        |
+        v
+    Email Notification
+```
+
+A detection was created for repeated failed Windows logon activity using Event ID 4625. Failed authentication attempts were grouped by account and source, and the detection was configured to alert when the defined threshold was exceeded.
+
+This phase demonstrated the transition from simple centralized log collection into practical detection engineering and automated alerting.
+
+### Figure 27 – Repeated Failed Login Detection
+
+<p align="center">
+<img src="images/splunk/splunk-4625-detection.png" width="900">
+</p>
+
+Splunk analyzed Windows Security Event ID 4625 activity from WIN11-01 and identified repeated failed authentication attempts using a custom SPL detection query.
+
+### Figure 28 – Splunk Triggered Alert
+
+<p align="center">
+<img src="images/splunk/splunk-triggered-alert.png" width="900">
+</p>
+
+The repeated failed-login detection was converted into a scheduled Splunk alert. Controlled authentication testing successfully triggered the detection, validating the configured threshold and alert schedule.
+
+### Figure 29 – Automated Email Alert Notification
+
+<p align="center">
+<img src="images/splunk/splunk-email-notification.png" width="700">
+</p>
+
+Splunk successfully generated and delivered an email notification after the repeated failed-login detection criteria were met, validating the complete workflow from Windows event generation through detection and alert notification.
+
+### Troubleshooting Insight
+
+During implementation, troubleshooting was required across multiple layers of the environment.
+
+Storage pressure on the Proxmox host contributed to virtual machine instability and required expansion of available storage resources. The Splunk Universal Forwarder installation on WIN11-01 also required repair after configuration corruption was identified. After reinstalling and validating the forwarder, Windows event ingestion resumed successfully.
+
+SMTP alerting required additional troubleshooting after the detection itself was confirmed to be functioning. Splunk alert history verified that the scheduled detection was triggering correctly, allowing the issue to be isolated to email authentication rather than the SPL query or event pipeline.
+
+This reinforced the value of troubleshooting each layer independently: event generation, forwarding, ingestion, detection logic, alert scheduling, and notification delivery.
+
+### Outcome
+
+* Splunk Enterprise successfully deployed
+* Windows endpoint log forwarding established
+* Centralized Windows event ingestion validated
+* SPL-based detection engineering implemented
+* Repeated failed authentication activity detected
+* Scheduled security alert successfully triggered
+* Email notification workflow successfully validated
+* End-to-end detection and alerting pipeline operational
+
 
 ---
 
@@ -1150,271 +1390,6 @@ auditpol /get /category:*
 ```
 
 This confirmed both the policy source and the effective Windows audit configuration.
-
----
-
-# Project Timeline
-
-✅ Phase 1 — Network Planning
-
-✅ Phase 2 — Proxmox VE Deployment
-
-✅ Phase 3 — pfSense Firewall & Network Segmentation
-
-✅ Phase 4 — Wazuh SIEM Deployment
-
-✅ Phase 5 — Windows Server 2022 Deployment
-
-✅ Phase 6 — Active Directory Domain Services
-
-✅ Phase 7 — Windows 11 Enterprise Client
-
-✅ Phase 8 — Group Policy & Windows Security Auditing
-
-✅ Phase 9 — Wazuh Windows 11 Endpoint Integration
-
-✅ Phase 10 — Sysmon
-
-✅ Phase 11 — Splunk Enterprise Detection & Alerting
-
-🔄 Phase 12 — Attack Simulation & Detection
-
----
-
-# Phase 9 – Wazuh Windows 11 Endpoint Integration
-
-WIN11-01 was integrated with the existing Wazuh SIEM infrastructure to provide centralized endpoint security monitoring and Windows event analysis.
-
-The Wazuh Agent was installed and registered with the Wazuh Manager, establishing communication between the Windows 11 workstation and the centralized monitoring infrastructure.
-
-Validation included:
-
-- Installed the Wazuh Agent on WIN11-01
-- Registered WIN11-01 with the Wazuh Manager
-- Verified the endpoint reported as an active Wazuh agent
-- Confirmed Windows Security Event ingestion
-- Generated controlled successful and failed authentication attempts
-- Identified Windows Event ID 4625 authentication failures
-- Reviewed authentication activity through the Wazuh Dashboard
-- Analyzed detailed failed logon event data
-- Confirmed Wazuh alert generation for failed authentication activity
-- Validated centralized endpoint monitoring across the segmented network
-
-The validated telemetry path is:
-
-```text
-WIN11-01
-    |
-    v
-Windows Security Events
-    |
-    v
-Wazuh Agent
-    |
-    v
-VLAN 10 - Client
-    |
-    v
-pfSense Inter-VLAN Routing
-    |
-    v
-VLAN 20 - Server
-    |
-    v
-Wazuh Manager
-192.168.20.10
-    |
-    v
-Wazuh Dashboard / Detection
-```
-
-This validation demonstrated that security events generated on a domain-joined Windows endpoint could be collected, transported across the segmented environment, analyzed by Wazuh, and presented as centralized security alerts.
-
-### Figure 24 – Wazuh Windows 11 Endpoint Monitoring
-
-<p align="center">
-<img src="images/wazuh/wazuh-win11-endpoint-monitoring.png" width="900">
-</p>
-
-WIN11-01 reporting to the Wazuh Manager as an active endpoint, confirming successful agent registration and centralized monitoring.
-
-### Figure 25 – Failed Authentication Detection
-
-<p align="center">
-<img src="images/wazuh/wazuh-failed-authentication-detection.png" width="900">
-</p>
-
-Controlled authentication testing generated Windows Event ID 4625 activity. Wazuh ingested the Windows Security event and generated a failed authentication alert, validating endpoint telemetry and SIEM detection.
-
----
-
-# Phase 10 – Sysmon Endpoint Telemetry
-
-Sysmon was deployed on WIN11-01 to extend endpoint visibility beyond standard Windows Security auditing and provide detailed system activity for centralized analysis.
-
-Microsoft Sysinternals Sysmon was installed using a modular Sysmon configuration designed to capture security-relevant endpoint activity.
-
-Validation included:
-
-- Installed Sysmon on WIN11-01
-- Applied and validated a Sysmon XML configuration
-- Verified the Sysmon service and driver started successfully
-- Confirmed Sysmon events were generated locally
-- Validated telemetry through the Microsoft-Windows-Sysmon/Operational event channel
-- Observed process creation and file creation activity
-- Configured the Wazuh Agent to collect the Sysmon Operational event channel
-- Restarted the Wazuh Agent to apply the updated configuration
-- Confirmed Sysmon telemetry was forwarded to the Wazuh Manager
-- Verified Wazuh applied Sysmon-specific detection rules
-- Analyzed Sysmon-generated security alerts through the Wazuh Dashboard
-
-The validated telemetry path is:
-
-```text
-WIN11-01
-    |
-    v
-Sysmon
-    |
-    v
-Microsoft-Windows-Sysmon/Operational
-    |
-    v
-Wazuh Agent
-    |
-    v
-VLAN 10 - Client
-    |
-    v
-pfSense Inter-VLAN Routing
-    |
-    v
-VLAN 20 - Server
-    |
-    v
-Wazuh Manager
-192.168.20.10
-    |
-    v
-Wazuh Detection Rules / Dashboard
-```
-
-### Figure 26 – Sysmon Endpoint Telemetry
-
-<p align="center">
-<img src="images/sysmon/sysmon-event-viewer.png" width="900">
-</p>
-
-WIN11-01 generating Sysmon telemetry within the Microsoft-Windows-Sysmon/Operational event channel, confirming successful Sysmon deployment and local event generation.
-
-### Figure 27 – Sysmon Detection in Wazuh
-
-<p align="center">
-<img src="images/sysmon/wazuh-sysmon-detection.png" width="900">
-</p>
-
-Sysmon telemetry from WIN11-01 ingested by Wazuh and matched against Sysmon-specific detection rules, validating centralized collection, endpoint visibility, and SIEM detection.
-
----
-
-# Phase 11 – Splunk Enterprise Detection & Alerting
-
-Splunk Enterprise was deployed to extend the homelab's SIEM and detection-engineering capabilities and provide a second platform for centralized Windows event analysis.
-
-A Splunk Universal Forwarder was installed on WIN11-01 and configured to forward Windows Application, Security, and System event logs to Splunk Enterprise. 
-
-Validation included:
-
-- Deployed Splunk Enterprise within the Proxmox environment
-- Installed the Splunk Universal Forwarder on WIN11-01
-- Configured Windows Application, Security, and System log forwarding
-- Verified active communication between WIN11-01 and Splunk Enterprise
-- Confirmed centralized Windows event ingestion
-- Generated controlled failed authentication attempts
-- Identified Windows Event ID 4625 activity in Splunk
-- Developed an SPL query to identify repeated failed logins
-- Applied a threshold requiring multiple failed authentication attempts within a defined time window
-- Converted the detection query into a scheduled Splunk alert
-- Configured the alert to execute every five minutes
-- Validated successful alert triggering
-- Integrated SMTP-based email notifications
-- Confirmed successful end-to-end delivery of the security alert by email
-
-The validated detection workflow is:
-
-```
-    WIN11-01
-        |
-        v
-    Windows Security Events
-        |
-        v
-    Splunk Universal Forwarder
-        |
-        v
-    Splunk Enterprise
-        |
-        v
-    SPL Detection Query
-        |
-        v
-    Repeated Failed Login Detection
-        |
-        v
-    Scheduled Alert
-        |
-        v
-    Email Notification
-```
-
-A detection was created for repeated failed Windows logon activity using Event ID 4625. Failed authentication attempts were grouped by account and source, and the detection was configured to alert when the defined threshold was exceeded.
-
-This phase demonstrated the transition from simple centralized log collection into practical detection engineering and automated alerting.
-
-### Figure 28 – Repeated Failed Login Detection
-
-<p align="center">
-<img src="images/splunk/splunk-4625-detection.png" width="900">
-</p>
-
-Splunk analyzed Windows Security Event ID 4625 activity from WIN11-01 and identified repeated failed authentication attempts using a custom SPL detection query.
-
-### Figure 29 – Splunk Triggered Alert
-
-<p align="center">
-<img src="images/splunk/splunk-triggered-alert.png" width="900">
-</p>
-
-The repeated failed-login detection was converted into a scheduled Splunk alert. Controlled authentication testing successfully triggered the detection, validating the configured threshold and alert schedule.
-
-### Figure 30 – Automated Email Alert Notification
-
-<p align="center">
-<img src="images/splunk/splunk-email-notification.png" width="700">
-</p>
-
-Splunk successfully generated and delivered an email notification after the repeated failed-login detection criteria were met, validating the complete workflow from Windows event generation through detection and alert notification.
-
-### Troubleshooting Insight
-
-During implementation, troubleshooting was required across multiple layers of the environment.
-
-Storage pressure on the Proxmox host contributed to virtual machine instability and required expansion of available storage resources. The Splunk Universal Forwarder installation on WIN11-01 also required repair after configuration corruption was identified. After reinstalling and validating the forwarder, Windows event ingestion resumed successfully.
-
-SMTP alerting required additional troubleshooting after the detection itself was confirmed to be functioning. Splunk alert history verified that the scheduled detection was triggering correctly, allowing the issue to be isolated to email authentication rather than the SPL query or event pipeline.
-
-This reinforced the value of troubleshooting each layer independently: event generation, forwarding, ingestion, detection logic, alert scheduling, and notification delivery.
-
-### Outcome
-
-* Splunk Enterprise successfully deployed
-* Windows endpoint log forwarding established
-* Centralized Windows event ingestion validated
-* SPL-based detection engineering implemented
-* Repeated failed authentication activity detected
-* Scheduled security alert successfully triggered
-* Email notification workflow successfully validated
-* End-to-end detection and alerting pipeline operational
 
 ---
 

@@ -26,6 +26,7 @@ The goal of this project is to demonstrate enterprise infrastructure deployment,
     - Phase 9 – Wazuh Windows 11 Endpoint Integration
     - Phase 10 – Sysmon Endpoint Telemetry
     - Phase 11 – Splunk Enterprise Detection & Alerting
+    - Phase 12 - Attack Simulation & Detection
 - Firewall Policy Summary
 - Troubleshooting & Validation Highlights
 - Future Expansion
@@ -135,6 +136,11 @@ The environment currently includes:
 - Scheduled Alert Configuration
 - Security Event Correlation
 - Email Alert Integration
+- Controlled Attack Simulation
+- Windows Process Creation Analysis
+- PowerShell Detection
+- Authentication Attack Detection
+- Detection Tuning
 
 ---
 
@@ -347,6 +353,17 @@ WIN11-01 authenticates against DC01 across VLAN boundaries and uses the domain c
 - Triggered alert validation
 - Email security alert notification
 - Proxmox storage expansion and LVM-Thin storage management
+- Windows Event ID 4688 process creation analysis
+- PowerShell command-line detection
+- Windows discovery-command detection
+- Multi-process discovery correlation
+- Remote authentication attack simulation
+- Windows Event ID 4625 network logon analysis
+- Remote source authentication correlation
+- Threshold-based Splunk detections
+- Automated Splunk Log Event actions
+- Controlled cross-VLAN security testing
+- Detection tuning and false-positive reduction
 
 ---
 
@@ -937,13 +954,13 @@ images/group-policy/windows-firewall-policy.png
 
 Policy was manually refreshed on WIN11-01:
 
-```powershell
+```PowerShell
 gpupdate /force
 ```
 
 Computer policy application was verified with:
 
-```powershell
+```PowerShell
 gpresult /r /scope computer
 ```
 
@@ -986,7 +1003,7 @@ images/group-policy/gpresult-validation.png
 
 Effective Windows auditing was validated directly from WIN11-01 using:
 
-```powershell
+```PowerShell
 auditpol /get /category:*
 ```
 
@@ -1283,6 +1300,173 @@ This reinforced the value of troubleshooting each layer independently: event gen
 * Email notification workflow successfully validated
 * End-to-end detection and alerting pipeline operational
 
+---
+
+## Phase 12 - Attack Simulation & Detection
+
+### Objective 
+
+Move beyond log collection and basic alerting by conducting controlled attack simulations against the Windows 11 endpoint and developing Splunk detections around the resulting Windows Security telemetry.
+
+The goal was to validate the full detection pipeline:
+
+**Controlled Activity -> Windows Security Logs -> Universal Forwarder -> Splunk -> SPL Detection -> Scheduled Alert Action**
+
+---
+
+### Process Creation Auditing
+
+Windows process creation auditing was used to capture Event ID **4688** telemetry from `WIN11-01`.
+
+Command-line process auditing was enabled through Group Policy so Splunk could analyze not only which processes executed, but also the associated command-line arguments.
+
+This provided the telemetry required for PowerShell and Windows discovery-command detections.
+
+---
+
+### Detection 1 - Suspicious PowerShell Execution
+
+A controlled PowerShell test was performed using command-line behavior associated with potentially suspicious activity, including web-request functionality.
+
+The Splunk detection monitored Event ID **4688** for PowerShell execution containing patterns such as:
+
+- `-EncodedCommand`
+- `-enc`
+- `Invoke-WebRequest`
+- `DownloadString`
+- `IEX`
+
+Splunk's own `splunk-powershell.exe` process was excluded after identifying it as expected Universal Forwarder activity.
+
+A scheduled alert was configured to generate a Log Event when the detection returned results.
+
+### Figure 30 – Suspicious PowerShell Detection Alert Action
+
+<p align="center">
+<img src="images/attack-simulation/phase12-powershell-alert-log-event.png" width="900">
+</p>
+
+Splunk successfully executed the scheduled Suspicious PowerShell Command Execution alert and generated an automated Log Event, validating the detection and alert-action pipeline.
+
+---
+
+### Detection 2 – Multiple Windows Discovery Commands
+
+Controlled Windows discovery activity was generated using commands such as:
+
+```cmd
+whoami
+ipconfig
+net user
+systeminfo
+```
+
+Event ID **4688** telemetry was then analyzed in Splunk to identify the corresponding discovery processes.
+
+### Figure 31 – Windows Discovery Process Telemetry
+
+<p align="center">
+<img src="images/attack-simulation/phase12-windows-discovery-detection.png" width="900">
+</p>
+
+Windows Security Event ID 4688 telemetry captured controlled discovery activity on WIN11-01, including `whoami`, `ipconfig`, and `net` commands and their associated process information.
+
+Rather than alerting on a single command, the detection correlated multiple distinct discovery processes executed within a short time window.
+
+The SPL logic required at least **three unique discovery processes**, reducing the likelihood of triggering on an isolated administrative command.
+
+### Figure 32 – Correlated Multiple-Command Discovery Detection
+
+<p align="center">
+<img src="images/attack-simulation/phase12-multi-command-discovery-detection.png" width="900">
+</p>
+
+Splunk correlated multiple distinct Windows discovery processes within a short time window and identified activity meeting the threshold of three or more unique discovery processes.
+
+The detection was converted into a scheduled Splunk alert with an automated Log Event action.
+
+### Figure 33 – Automated Discovery Detection Alert
+
+<p align="center">
+<img src="images/attack-simulation/phase12-discovery-alert-log-event.png" width="900">
+</p>
+
+The Multiple Windows Discovery Commands scheduled alert successfully generated an automated Log Event, confirming end-to-end detection and alert execution.
+
+---
+
+### Detection 3 – Repeated Remote Authentication Failures
+
+A controlled remote authentication test was performed from the Linux Mint management system toward `WIN11-01`.
+
+Because the lab normally blocks traffic between the Management and Client VLANs, temporary narrowly scoped firewall rules were created specifically for the test. SMB access was permitted only between the test systems.
+
+An intentionally incorrect credential was then used to generate a Windows failed network authentication event.
+
+Splunk captured:
+
+- Windows Security Event ID **4625**
+- Logon Type **3** (network logon)
+- Remote source address `192.168.99.100`
+- Destination endpoint `WIN11-01`
+
+### Figure 34 – Remote Windows Authentication Failure
+
+<p align="center">
+<img src="images/attack-simulation/phase12-remote-authentication-4625.png" width="900">
+</p>
+
+Splunk captured Windows Security Event ID 4625 with Logon Type 3 from remote source `192.168.99.100`, confirming that the controlled SMB authentication attempt generated remote network-logon telemetry.
+
+The simulation was repeated to generate multiple failed authentication attempts. Splunk correlated failures originating from the same remote source and triggered when **three or more network authentication failures** occurred within the detection window.
+
+### Figure 35 – Repeated Remote Authentication Failure Detection
+
+<p align="center">
+<img src="images/attack-simulation/phase12-repeated-remote-authentication-detection.png" width="900">
+</p>
+
+Splunk correlated three failed network authentication attempts originating from the same remote source address, demonstrating threshold-based detection of repeated remote authentication failures.
+
+A scheduled alert and Log Event action were also validated successfully, confirming the complete detection pipeline.
+
+After testing, all temporary Windows Firewall and pfSense rules were removed and the original inter-VLAN isolation was restored.
+
+### Figure 36 – Automated Remote Authentication Alert
+
+<p align="center">
+<img src="images/attack-simulation/phase12-remote-authentication-alert-log-event.png" width="900">
+</p>
+
+The Repeated Remote Authentication Failures scheduled alert successfully generated a Log Event, validating the complete remote-authentication detection and automated alert-action workflow.
+
+### Troubleshooting & Detection Tuning
+
+Several issues encountered during testing required additional investigation and refinement:
+
+- PowerShell telemetry initially included Splunk's own `splunk-powershell.exe` process. This expected Universal Forwarder activity was identified and excluded from the detection to reduce false positives.
+
+- The initial Windows discovery search focused on `cmd.exe`. Analysis of Event ID 4688 showed that discovery utilities were recorded as separate child processes, requiring the detection logic to target the individual executables.
+
+- Group Policy continued to enforce Windows Defender Firewall settings when a local firewall-disable command was attempted, validating centralized enforcement of the workstation security baseline.
+
+- Existing pfSense segmentation correctly blocked communication from the Management VLAN to the Client VLAN. Temporary source-specific pfSense and Windows Firewall rules were therefore created to permit only the traffic required for the controlled remote authentication simulation.
+
+- After testing was completed, all temporary firewall exceptions were removed and the original inter-VLAN isolation was restored.
+
+### Outcome
+
+- Validated Windows Event ID 4688 process creation telemetry
+- Developed and tuned suspicious PowerShell detection logic
+- Correlated multiple Windows discovery processes
+- Generated genuine remote Event ID 4625 network authentication failures
+- Identified the remote source address through Splunk telemetry
+- Implemented threshold-based SPL detection logic
+- Validated scheduled Splunk alert actions
+- Performed controlled cross-VLAN security testing
+- Reduced false positives through detection tuning
+- Restored network segmentation after testing
+- Validated the end-to-end attack simulation and detection workflow
 
 ---
 
@@ -1324,7 +1508,7 @@ The issue was traced to a VLAN tagging mismatch between WIN11-01 and the native 
 
 After correcting the VM network configuration and renewing DHCP:
 
-```powershell
+```PowerShell
 ipconfig /release
 ipconfig /renew
 ```
@@ -1383,7 +1567,7 @@ This demonstrated the dependency domain endpoints have on core infrastructure se
 
 Rather than assuming that the GPO was applied, policy deployment was explicitly validated using:
 
-```powershell
+```PowerShell
 gpupdate /force
 gpresult /r /scope computer
 auditpol /get /category:*
@@ -1405,8 +1589,6 @@ Planned enhancements include:
 - Additional Security Groups
 - Service Accounts
 - Active Directory security hardening
-- Authentication attack simulation
-- Detection engineering
 - Custom Wazuh rules
 - SIEM alert tuning
 - IDS/IPS implementation
@@ -1479,5 +1661,11 @@ Key technical outcomes include:
 - Converted detection logic into a scheduled security alert
 - Validated automated email notification delivery
 - Troubleshot the detection pipeline from endpoint telemetry through alert notification
+- Conducted controlled PowerShell, discovery, and remote authentication simulations
+- Developed detections using Windows Event IDs 4688 and 4625
+- Correlated repeated remote authentication failures by source address
+- Tuned detection logic to reduce expected or benign activity
+- Validated automated Splunk Log Event actions
+- Temporarily modified firewall policy for controlled testing and restored segmentation afterward
 
-The environment will continue to expand with vulnerability management, additional detection engineering, controlled attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.
+The environment will continue to expand with vulnerability management, additional detection engineering, advanced attack simulation, SIEM analysis, alert tuning, and blue-team security operations to further simulate a production enterprise environment.
